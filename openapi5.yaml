@@ -1,18 +1,18 @@
-openapi: 3.1.0
+openapi: 3.0.0
 servers:
   - url: https://wss1.mtsp.co.in:16107
 info:
   description: |
     This is the REST API documentation for the MTS application. You can learn more about API by visiting [multitradesoftech.com/](https://www.multitradesoftech.com/). Please contact in this number +91 8980983000 to obtain API & Secret Key. To test the authorization filters for this sample, you can utilize provided API_key and secret_key.
-
+    
     # Introduction
 
     This API is documented and designed to facilitate algorithmic trading activities. It incorporates standard REST API principles to enable seamless communication between trading applications and the underlying platform. The structure of the API is based on the Multitrade sample provided by our team. Additionally, it has been extended to showcase the capabilities of the API tool and leverage MTS documentation. In addition to adhering to standard REST API syntax, the API also utilizes a few vendor extensions to enhance its functionality.
-
+    
     # Specification
 
     The API follows the REST API format and is specifically designed to support algorithmic trading activities. It provides comprehensive documentation on endpoints, request/response formats, and authentication mechanisms, making it easy for developers to integrate with trading applications.
-
+    
     # Versions and Dependencies
 
     |   Language |   Version                                                      |   Required Libraries/Packages                                                                                             |
@@ -33,7 +33,7 @@ info:
     |           405 |   Invalid Method                                                  | {"status": "unsuccessful", "data": {"error": "Invalid Method"}}             |
     |           404 |   Wrong Request please check path                                   | {"status": "unsuccessful", "data": {"error": "Wrong Request please check path"}}                |
     |           429 |   Msg rate limit exceeded                                    | {"status": "unsuccessful", "data": {"error_text": "Message rate limit has exceeded by it's limit"}}                                        |
-
+    
     # Authentication
 
     MTS API offers combination of two forms of authentication:
@@ -53,7 +53,7 @@ info:
     url: https://raw.githubusercontent.com/abhinavshreshth/Temp/main/mtslogo.png
     altText: Multitrade logo
   license:
-    name: "License: Apache 2.0"
+    name: 'License: Apache 2.0'
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 externalDocs:
   description: Find out how you can setup our REST API.
@@ -63,731 +63,734 @@ externalDocs:
 tags:
   - name: Broadcast
     description: |
-      The WebSocket API is the most efficient (speed, latency, resource consumption, and bandwidth) way to receive quotes for instruments across all exchanges during live market hours. A quote consists of fields such as open, high, low, close, last traded price, 5 levels of bid/offer market depth data etc
+        The WebSocket API is the most efficient (speed, latency, resource consumption, and bandwidth) way to receive quotes for instruments across all exchanges during live market hours. A quote consists of fields such as open, high, low, close, last traded price, 5 levels of bid/offer market depth data etc
 
-      **Establishing WebSocket connection**
+        **Establishing WebSocket connection**
 
-      To achieve the equivalent WebSocket connection in Python, you can use the websockets library. Here's how you can do it:
+        To achieve the equivalent WebSocket connection in Python, you can use the websockets library. Here's how you can do it:
+        
+        `Python`
 
-      `Python`
+          ```
+          import asyncio
+          import websockets
+
+          async def connect_to_server():
+              async with websockets.connect('wss://wss1.mtsp.co.in:16108') as websocket:
+                  response = await websocket.recv()
+                  if "HandShake" in response:
+                      print("WebSocket connection successful!")
+                  else:
+                      print("WebSocket connection failed")
+
+          asyncio.run(connect_to_server())
+
+              
+          ```
+
+        `Node.js`
+
+          ```
+
+          const WebSocket = require('ws');
+
+          async function connectToServer() {
+              const websocket = new WebSocket('wss://wss1.mtsp.co.in:16108');
+
+              websocket.on('message', function(message) {
+                  if (message.includes('HandShake')) {
+                      console.log('WebSocket connection successful!');
+                  } else {
+                      console.log('WebSocket connection failed');
+                  }
+                  websocket.close();
+              });
+          }
+
+          connectToServer();
+
+
+          ```
+
+        It awaits a message (response) from the server using websocket.recv(). If the received message contains the substring "HandShake", it prints "WebSocket connection successful!" indicating that the handshake process was successful.
+        If the message does not contain "HandShake", it prints "WebSocket connection failed".
+        
+
+        
+        # Broadcast Request
+
+        The script establishes a WebSocket connection to a server, sends a "Broadcast" message upon receiving a handshake, and processes and prints the received broadcast messages containing market data.
+        
+        **Request Structure -**
+        
+        {"Message": "Broadcast",
+
+        "EXC": "NSECM",
+
+        "SECID": "3045"}
+
+
+        `Python`
+
+          ```
+          import asyncio
+          import websockets
+
+          async def connect_to_server():
+              async with websockets.connect('wss://wss1.mtsp.co.in:16108') as websocket:
+                  response = await websocket.recv()
+                  if "HandShake" in response:
+                    
+                      sc = "{\"Message\":\"Broadcast\",\"EXC\":\"NSECM\",\"SECID\":\"3045\"}"
+                      await websocket.send(sc)
+                      response = await websocket.recv()
+                      if "\"Broadcast\"" in response:
+                            print(response)
+                  else:
+                      print("WebSocket connection failed")
+
+          asyncio.run(connect_to_server())
+              
+          ```
+
+        `Node.js`
+
+          ```
+
+          const WebSocket = require('ws');
+
+          async function connect() {
+              const ws = new WebSocket('wss://wss1.mtsp.co.in:16108');
+
+              ws.on('open', () => ws.send('{"Message":"Broadcast","EXC":"NSECM","SECID":"3045"}'));
+              ws.on('message', data => {
+                  if (data instanceof Buffer) {
+                      // Convert binary buffer to string
+                      data = data.toString('utf-8');
+                  }
+                  console.log(data.includes('"Broadcast"') ? data : 'WebSocket connection failed');
+              });
+          }
+
+          connect();
+
+
+
+          ```
+
+        Upon receiving a response to this broadcast message, it checks if the response contains "Broadcast". If so, it prints the entire response.
+        The broadcast response itself is a JSON object containing various fields related to market data. 
+        Broadcast response comes in json format, which can further be pursed according to the need and requirement.
+
+        # Response
+        JSON Output - 
+          ```
+            {
+                "Message": "Broadcast",
+                "EXC": "NSECM",
+                "SECID": "3045",
+                "BT": "1709113203",
+                "B": [
+                    {
+                        "P": "743.45",
+                        "Q": "91",
+                        "C": "4"
+                    },
+                    {
+                        "P": "743.40",
+                        "Q": "2453",
+                        "C": "8"
+                    },
+                    {
+                        "P": "743.35",
+                        "Q": "26",
+                        "C": "3"
+                    },
+                    {
+                        "P": "743.30",
+                        "Q": "2327",
+                        "C": "16"
+                    },
+                    {
+                        "P": "743.25",
+                        "Q": "316",
+                        "C": "8"
+                    }
+                ],
+                "A": [
+                    {
+                        "P": "743.50",
+                        "Q": "11",
+                        "C": "1"
+                    },
+                    {
+                        "P": "743.55",
+                        "Q": "267",
+                        "C": "4"
+                    },
+                    {
+                        "P": "743.65",
+                        "Q": "1500",
+                        "C": "1"
+                    },
+                    {
+                        "P": "743.70",
+                        "Q": "11",
+                        "C": "1"
+                    },
+                    {
+                        "P": "743.75",
+                        "Q": "2530",
+                        "C": "7"
+                    }
+                ],
+                "TQT": "10120104",
+                "LTP": "743.50",
+                "LTQ": "12",
+                "LTT": "1709113203",
+                "VWAP": "748.39",
+                "TBQTY": "609120",
+                "TSQTY": "1216842",
+                "O": "749.85",
+                "H": "756.75",
+                "L": "741.00",
+                "C": "749.85",
+                "OI": "0",
+                "LL": "501.55",
+                "LH": "777.50",
+                "TV": "75737.85"
+            }
+
+          ```
+        The broadcast response itself is a JSON object containing various fields related to market data. Here's a breakdown of the structure:
+        - "EXC": Represents the exchange where the security is traded (e.g., "NSECM").
+        - "SECID": Represents the security identifier.
+        - "BT": Broadcast time.
+        - "B": 5 Array of Buy Side Depth. containing objects with price ("P"), quantity ("Q"), and Order Count ("C").
+        - "A": 5 Array of Sell Side Depth
+        - "TQT": Total quantity traded.
+        - "LTP": Last traded price.
+        - "LTQ": Last traded quantity.
+        - "LTT": Last traded time.
+        - "VWAP": Volume weighted average price.
+        - "TBQTY": Total buy quantity.
+        - "TSQTY": Total sell quantity.
+        - "O": Open price.
+        - "H": High price.
+        - "L": Low price.
+        - "C": Close price.
+        - "OI": Open interest.
+        - "LL": Life low.
+        - "LH": Life high.
+        - "TV": Total value traded.
+
+        **Parsing Live VWAP value (From Broadcast)**
+
+        This is the sample code for getting live VWAP out of broadcast message. Similarly we can all other like the Volume Last trded price (LTP), Last Traded Quantity (LTQ), Close price(C), and more. 
+        It's all about finding the right names for these values in the JSON data and adjusting the script accordingly. With a bit of tweaking, you can easily fetch and keep an eye on various live market statistics that matter to you.
+
+        `Python`
+
+
+          ```
+          import asyncio
+          import websockets
+
+          async def connect_to_server():
+              async with websockets.connect('wss://wss1.mtsp.co.in:16108') as websocket:
+                  response = await websocket.recv()
+                  if "HandShake" in response:
+
+                      sc = "{\"Message\":\"Broadcast\",\"EXC\":\"NSECM\",\"SECID\":\"3045\"}"
+                      await websocket.send(sc)
+
+                  OldVWAP = -1
+                  while True:
+                      response = await websocket.recv()
+                      if "\"Broadcast\"" in response:
+                          response_string = response
+                          responses = response_string.strip().split("\n\n")
+
+                      for res in responses:
+                          data = json.loads(res)
+                          if "LTP" in data:
+                              if (OldVWAP != data["VWAP"] ):
+                                OldVWAP = data["VWAP"]
+                                print("VWAP:", data["VWAP"])
+
+          asyncio.run(connect_to_server())
+              
+          ```
+
+        `Node.js`
+
+          ```
+
+          const WebSocket = require('ws');
+
+          async function connectToServer() {
+              const ws = new WebSocket('wss://wss1.mtsp.co.in:16108');
+
+              ws.on('open', async () => {
+                  const sc = '{"Message":"Broadcast","EXC":"NSECM","SECID":"3045"}';
+                  await ws.send(sc);
+              });
+
+              let oldVWAP = -1;
+              ws.on('message', data => {
+                  const response = data.toString(); 
+                  if (response.includes('"VWAP"')) {
+                      const responses = response.trim().split("\n\n");
+
+                      for (const res of responses) {
+                          try {
+                              const jsonData = JSON.parse(res);
+                              if (jsonData["VWAP"] && oldVWAP !== jsonData["VWAP"]) {
+                                  oldVWAP = jsonData["VWAP"];
+                                  console.log("VWAP:", jsonData["VWAP"]);
+                              }
+                          } catch (error) {
+                              console.error('Error parsing JSON:', error);
+                          }
+                      }
+                  }
+              });
+          }
+
+          connectToServer().catch(console.error);
+
+
+
+          ```
+        
+
+
+        Output:
+
+          ```
+
+          VWAP: 766.44
+          VWAP: 766.45
+          VWAP: 766.46
+          VWAP: 766.47
+          VWAP: 766.48
+          VWAP: 766.51
+          VWAP: 766.52
+          VWAP: 766.53
+          VWAP: 766.54
+          VWAP: 766.62
+          VWAP: 766.76
+          .
+          .
+          .
+          and so on
+
+
+          ```
+
+        VWAP is crucial in stock trading, showing the average price weighted by volume. Traders rely on it to gauge fair value, decide on trades, and minimize market impact. It's especially handy for intraday analysis and algorithmic trading, offering a key reference point for efficient market navigation.
+
+
+
+  - name: LTP
+    description: |
+        It is the Last Traded Price at which a security was traded on an exchange. It provides a real-time snapshot of a security's valuation, guiding investment decisions and trading strategies based on current market sentiment.
+        # LTP Request
+        **Request Structure -**
+        
+        { "Message": "LTP",
+
+        "EXC": "NSEFO",
+
+        "SECID": "35020" }
+
+        `Python`
+
+          ```
+
+          import asyncio
+          import websockets
+
+          async def connect_to_server():
+              async with websockets.connect('wss://wss1.mtsp.co.in:16108') as websocket:
+                  response = await websocket.recv()
+                  if "HandShake" in response:
+                    
+                      sc = "{\"Message\":\"LTP\",\"EXC\":\"NSEFO\",\"SECID\":\"35020\"}"
+                      await websocket.send(sc)
+                      while True:
+                        response = await websocket.recv()
+                        if "\"LTP\"" in response:
+                          print(response)
+                  else:
+                      print("WebSocket connection failed")
+
+          asyncio.run(connect_to_server())
+
+          ```
+
+        `Node.js`
+
+          ```
+          const WebSocket = require('ws');
+
+          async function connect() {
+              const ws = new WebSocket('wss://wss1.mtsp.co.in:16108');
+
+              ws.on('open', () => ws.send('{"Message":"LTP","EXC":"NSEFO","SECID":"35020"}'));
+              ws.on('message', data => {
+                  if (data instanceof Buffer) {
+                      // Convert binary buffer to string
+                      data = data.toString('utf-8');
+                  }
+                  console.log(data.includes('"LTP"') ? data : 'WebSocket connection failed');
+              });
+          }
+
+          connect();
+
+          ```
+
+        
+        # Response
+        JSON Output - 
+          ```
+          {
+              "Message": "LTP",
+              "EXC": "NSEFO",
+              "SECID": "35020",
+              "LTP": "20915.00"
+          }
+
+          ```
+        LTP Response structure:
+
+        - Message: LTP
+        - EXC: Represents the exchange where the security is traded (e.g., "NSEFO").
+        - SECID: Represents the security identifier.
+        - LTP: Last traded price.
+
+  - name: OHLCL
+    description: |
+        OHLCL stands for Open, High, Low, Close. It's a set of data points commonly used in financial markets to summarize the trading activity of a security over a given period. This data is essential for technical analysis, charting, and understanding market trends.
+        # OHLCL Request
+        **Request Structure -**
+        
+        {"Message": "OHLCL",
+
+        "EXC": "NSEFO",
+
+        "SECID": "35707"}
+
+
+        `Python`
+
+          ```
+
+          import asyncio
+          import websockets
+
+          async def connect_to_server():
+              async with websockets.connect('wss://wss1.mtsp.co.in:16108') as websocket:
+                  response = await websocket.recv()
+                  if "HandShake" in response:
+                    
+                      sc = "{\"Message\":\"OHLCL\",\"EXC\":\"NSEFO\",\"SECID\":\"35707\"}"
+                      await websocket.send(sc)
+                      while True:
+                        response = await websocket.recv()
+                        if "\"OHLCL\"" in response:
+                          print(response)
+                  else:
+                      print("WebSocket connection failed")
+
+          asyncio.run(connect_to_server())
+
+          ```
+
+        `Node.js`
+
+          ```
+          const WebSocket = require('ws');
+
+          async function connect() {
+              const ws = new WebSocket('wss://wss1.mtsp.co.in:16108');
+
+              ws.on('open', () => ws.send('{"Message":"OHLCL","EXC":"NSEFO","SECID":"35707"}'));
+              ws.on('message', data => {
+                  if (data instanceof Buffer) {
+                      // Convert binary buffer to string
+                      data = data.toString('utf-8');
+                  }
+                  console.log(data.includes('"OHLCL"') ? data : 'WebSocket connection failed');
+              });
+          }
+
+          connect();
+
+          ```
+
+        
+        # Response
+        JSON Output - 
+
+          ```
+          {
+              "Message": "OHLCL",
+              "EXC": "NSEFO",
+              "SECID": "35707",
+              "O": "11015.00",
+              "H": "11099.25",
+              "L": "11013.10",
+              "C": "10985.00",
+              "LTP": "11092.05"
+          }
+
+          ```
+
+        OHLCL response structure:
+
+        - Message: OHLCL
+        - EXC: Represents the exchange where the security is traded (e.g., "NSEFO").
+        - SECID: Represents the security identifier.
+        - O: Open price.
+        - H: High price.
+        - L: Low price.
+        - C: Close price.
+        - LTP: Last traded price.
+
+  - name: Watch
+    description: |
+        The provided data includes essential information for tracking securities in financial markets. It covers details such as the exchange where the security is traded, its unique identifier, and recent trading activity. Other important data points encompass the total quantity and value traded, along with prices at the open, high, low, and close of trading sessions. Additionally, it includes timestamps for the last trade and broadcast, as well as open interest and volume-weighted average price. These details are vital for investors and traders to monitor market movements and make informed decisions.
+        # Watch Request
+        **Request Structure -**
+        
+        { "Message": "Watch",
+
+        "EXC": "NSEFO",
+
+        "SECID": "71441" }
+
+        `Python`
+
+          ```
+
+          import asyncio
+          import websockets
+
+          async def connect_to_server():
+              async with websockets.connect('wss://wss1.mtsp.co.in:16108') as websocket:
+                  response = await websocket.recv()
+                  if "HandShake" in response:
+                    
+                      sc = "{\"Message\":\"Watch\",\"EXC\":\"NSEFO\",\"SECID\":\"71441\"}"
+                      await websocket.send(sc)
+                      while True:
+                        response = await websocket.recv()
+                        if "\"Watch\"" in response:
+                          print(response)
+                  else:
+                      print("WebSocket connection failed")
+
+          asyncio.run(connect_to_server())
+
+          ```
+
+        `Node.js`
+
+          ```
+          const WebSocket = require('ws');
+
+          async function connect() {
+              const ws = new WebSocket('wss://wss1.mtsp.co.in:16108');
+
+              ws.on('open', () => ws.send('{"Message":"Watch","EXC":"NSEFO","SECID":"71441"}'));
+              ws.on('message', data => {
+                  if (data instanceof Buffer) {
+                      // Convert binary buffer to string
+                      data = data.toString('utf-8');
+                  }
+                  console.log(data.includes('"Watch"') ? data : 'WebSocket connection failed');
+              });
+          }
+
+          connect();
+
+          ```
+
+        
+        # Response
+        JSON Output -
+
+          ```
+          {
+              "Message": "Watch",
+              "EXC": "NSEFO",
+              "SECID": "71441",
+              "LTP": "22287.55",
+              "LTQ": "50",
+              "BP": "22285.05",
+              "BQ": "50",
+              "SP": "22287.05",
+              "SQ": "250",
+              "TQT": "1495350",
+              "TV": "332965.69659000001",
+              "BT": "1708663448",
+              "LLT": "1708663447",
+              "VWAP": "22266.74",
+              "OI": "11420900",
+              "O": "22285.10",
+              "H": "22344.45",
+              "L": "22235.10",
+              "C": "22243.25"
+          }
+
+          ```
+
+        Watch response structure:
+
+        - Message: Watch
+        - EXC: Represents the exchange where the security is traded (e.g., "NSEFO").
+        - SECID: Represents the security identifier.
+        - LTP: Last traded price.
+        - LTQ: Last traded quantity.
+        - BP: (L-1) Bid Price.
+        - BQ: (L-1) Bid Quantity.
+        - SP: Sell Price.
+        - SQ: Sell Quantity.
+        - TQT: Total quantity traded.
+        - TV: Total value traded.
+        - BT: Broadcast time.
+        - LLT: Last trade time.
+        - VWAP: Volume Weighted Average Price.
+        - OI: Open interest.
+        - O: Open price.
+        - H: High price.
+        - L: Low price.
+        - C: Close price.
+
+
+  - name: WS Login
+
+    description: |
+    
+        `Python`
 
         ```
+
+
         import asyncio
         import websockets
 
         async def connect_to_server():
-            async with websockets.connect('wss://wss1.mtsp.co.in:16108') as websocket:
-                response = await websocket.recv()
-                if "HandShake" in response:
-                    print("WebSocket connection successful!")
-                else:
-                    print("WebSocket connection failed")
+            async with websockets.connect('wss://wss1.mtsp.co.in:16107') as websocket:
+                sc = "{\"Message\":\"Login\",\"API_KEY\":\".KAoiU$GCfrrNDN4H|qq<<XtG\",\"REQUEST_TOKEN\":\"9uGleQ4keI9zL!3oZ.9d\"}"
+                await websocket.send(sc)
+                while True:
+                  response = await websocket.recv()
+                  print( response )
+                return
 
         asyncio.run(connect_to_server())
 
-            
         ```
 
-      `Node.js`
+        `Node.js`
 
         ```
 
         const WebSocket = require('ws');
 
         async function connectToServer() {
-            const websocket = new WebSocket('wss://wss1.mtsp.co.in:16108');
+            const ws = new WebSocket('wss://wss1.mtsp.co.in:16107');
 
-            websocket.on('message', function(message) {
-                if (message.includes('HandShake')) {
-                    console.log('WebSocket connection successful!');
-                } else {
-                    console.log('WebSocket connection failed');
-                }
-                websocket.close();
+            ws.on('open', function open() {
+                const sc = "{\"Message\":\"Login\",\"API_KEY\":\".KAoiU$GCfrrNDN4H|qq<<XtG\",\"REQUEST_TOKEN\":\"9uGleQ4keI9zL!3oZ.9d\"}";
+                ws.send(sc);
+            });
+
+            ws.on('message', function incoming(data) {
+                console.log(data);
             });
         }
 
         connectToServer();
 
-
         ```
 
-      It awaits a message (response) from the server using websocket.recv(). If the received message contains the substring "HandShake", it prints "WebSocket connection successful!" indicating that the handshake process was successful.
-      If the message does not contain "HandShake", it prints "WebSocket connection failed".
+        **Response 1** - 
 
-
-
-      # Broadcast Request
-
-      The script establishes a WebSocket connection to a server, sends a "Broadcast" message upon receiving a handshake, and processes and prints the received broadcast messages containing market data.
-
-      **Request Structure -**
-
-      {"Message": "Broadcast",
-
-      "EXC": "NSECM",
-
-      "SECID": "3045"}
-
-
-      `Python`
-
-        ```
-        import asyncio
-        import websockets
-
-        async def connect_to_server():
-            async with websockets.connect('wss://wss1.mtsp.co.in:16108') as websocket:
-                response = await websocket.recv()
-                if "HandShake" in response:
-                  
-                    sc = "{\"Message\":\"Broadcast\",\"EXC\":\"NSECM\",\"SECID\":\"3045\"}"
-                    await websocket.send(sc)
-                    response = await websocket.recv()
-                    if "\"Broadcast\"" in response:
-                          print(response)
-                else:
-                    print("WebSocket connection failed")
-
-        asyncio.run(connect_to_server())
-            
+        When the websocket connection is established and the user is Successfuly logged in, a "success" response will be received. The connection will then remain open, awaiting further updates from the server, such as when a new order is placed.
+       
         ```
 
-      `Node.js`
+        {"Message":"LoginResponse","Status":"success"}
 
         ```
-
-        const WebSocket = require('ws');
-
-        async function connect() {
-            const ws = new WebSocket('wss://wss1.mtsp.co.in:16108');
-
-            ws.on('open', () => ws.send('{"Message":"Broadcast","EXC":"NSECM","SECID":"3045"}'));
-            ws.on('message', data => {
-                if (data instanceof Buffer) {
-                    // Convert binary buffer to string
-                    data = data.toString('utf-8');
-                }
-                console.log(data.includes('"Broadcast"') ? data : 'WebSocket connection failed');
-            });
-        }
-
-        connect();
-
-
-
-        ```
-
-      Upon receiving a response to this broadcast message, it checks if the response contains "Broadcast". If so, it prints the entire response.
-      The broadcast response itself is a JSON object containing various fields related to market data. 
-      Broadcast response comes in json format, which can further be pursed according to the need and requirement.
-
-      # Response
-      JSON Output - 
-        ```
-          {
-              "Message": "Broadcast",
-              "EXC": "NSECM",
-              "SECID": "3045",
-              "BT": "1709113203",
-              "B": [
-                  {
-                      "P": "743.45",
-                      "Q": "91",
-                      "C": "4"
-                  },
-                  {
-                      "P": "743.40",
-                      "Q": "2453",
-                      "C": "8"
-                  },
-                  {
-                      "P": "743.35",
-                      "Q": "26",
-                      "C": "3"
-                  },
-                  {
-                      "P": "743.30",
-                      "Q": "2327",
-                      "C": "16"
-                  },
-                  {
-                      "P": "743.25",
-                      "Q": "316",
-                      "C": "8"
-                  }
-              ],
-              "A": [
-                  {
-                      "P": "743.50",
-                      "Q": "11",
-                      "C": "1"
-                  },
-                  {
-                      "P": "743.55",
-                      "Q": "267",
-                      "C": "4"
-                  },
-                  {
-                      "P": "743.65",
-                      "Q": "1500",
-                      "C": "1"
-                  },
-                  {
-                      "P": "743.70",
-                      "Q": "11",
-                      "C": "1"
-                  },
-                  {
-                      "P": "743.75",
-                      "Q": "2530",
-                      "C": "7"
-                  }
-              ],
-              "TQT": "10120104",
-              "LTP": "743.50",
-              "LTQ": "12",
-              "LTT": "1709113203",
-              "VWAP": "748.39",
-              "TBQTY": "609120",
-              "TSQTY": "1216842",
-              "O": "749.85",
-              "H": "756.75",
-              "L": "741.00",
-              "C": "749.85",
-              "OI": "0",
-              "LL": "501.55",
-              "LH": "777.50",
-              "TV": "75737.85"
-          }
-
-        ```
-      The broadcast response itself is a JSON object containing various fields related to market data. Here's a breakdown of the structure:
-      - "EXC": Represents the exchange where the security is traded (e.g., "NSECM").
-      - "SECID": Represents the security identifier.
-      - "BT": Broadcast time.
-      - "B": 5 Array of Buy Side Depth. containing objects with price ("P"), quantity ("Q"), and Order Count ("C").
-      - "A": 5 Array of Sell Side Depth
-      - "TQT": Total quantity traded.
-      - "LTP": Last traded price.
-      - "LTQ": Last traded quantity.
-      - "LTT": Last traded time.
-      - "VWAP": Volume weighted average price.
-      - "TBQTY": Total buy quantity.
-      - "TSQTY": Total sell quantity.
-      - "O": Open price.
-      - "H": High price.
-      - "L": Low price.
-      - "C": Close price.
-      - "OI": Open interest.
-      - "LL": Life low.
-      - "LH": Life high.
-      - "TV": Total value traded.
-
-      **Parsing Live VWAP value (From Broadcast)**
-
-      This is the sample code for getting live VWAP out of broadcast message. Similarly we can all other like the Volume Last trded price (LTP), Last Traded Quantity (LTQ), Close price(C), and more. 
-      It's all about finding the right names for these values in the JSON data and adjusting the script accordingly. With a bit of tweaking, you can easily fetch and keep an eye on various live market statistics that matter to you.
-
-      `Python`
-
-
-        ```
-        import asyncio
-        import websockets
-
-        async def connect_to_server():
-            async with websockets.connect('wss://wss1.mtsp.co.in:16108') as websocket:
-                response = await websocket.recv()
-                if "HandShake" in response:
-
-                    sc = "{\"Message\":\"Broadcast\",\"EXC\":\"NSECM\",\"SECID\":\"3045\"}"
-                    await websocket.send(sc)
-
-                OldVWAP = -1
-                while True:
-                    response = await websocket.recv()
-                    if "\"Broadcast\"" in response:
-                        response_string = response
-                        responses = response_string.strip().split("\n\n")
-
-                    for res in responses:
-                        data = json.loads(res)
-                        if "LTP" in data:
-                            if (OldVWAP != data["VWAP"] ):
-                              OldVWAP = data["VWAP"]
-                              print("VWAP:", data["VWAP"])
-
-        asyncio.run(connect_to_server())
-            
-        ```
-
-      `Node.js`
-
-        ```
-
-        const WebSocket = require('ws');
-
-        async function connectToServer() {
-            const ws = new WebSocket('wss://wss1.mtsp.co.in:16108');
-
-            ws.on('open', async () => {
-                const sc = '{"Message":"Broadcast","EXC":"NSECM","SECID":"3045"}';
-                await ws.send(sc);
-            });
-
-            let oldVWAP = -1;
-            ws.on('message', data => {
-                const response = data.toString(); 
-                if (response.includes('"VWAP"')) {
-                    const responses = response.trim().split("\n\n");
-
-                    for (const res of responses) {
-                        try {
-                            const jsonData = JSON.parse(res);
-                            if (jsonData["VWAP"] && oldVWAP !== jsonData["VWAP"]) {
-                                oldVWAP = jsonData["VWAP"];
-                                console.log("VWAP:", jsonData["VWAP"]);
-                            }
-                        } catch (error) {
-                            console.error('Error parsing JSON:', error);
-                        }
-                    }
-                }
-            });
-        }
-
-        connectToServer().catch(console.error);
-
-
-
-        ```
-
-
-
-      Output:
-
-        ```
-
-        VWAP: 766.44
-        VWAP: 766.45
-        VWAP: 766.46
-        VWAP: 766.47
-        VWAP: 766.48
-        VWAP: 766.51
-        VWAP: 766.52
-        VWAP: 766.53
-        VWAP: 766.54
-        VWAP: 766.62
-        VWAP: 766.76
-        .
-        .
-        .
-        and so on
-
-
-        ```
-
-      VWAP is crucial in stock trading, showing the average price weighted by volume. Traders rely on it to gauge fair value, decide on trades, and minimize market impact. It's especially handy for intraday analysis and algorithmic trading, offering a key reference point for efficient market navigation.
-
-  - name: LTP
-    description: |
-      It is the Last Traded Price at which a security was traded on an exchange. It provides a real-time snapshot of a security's valuation, guiding investment decisions and trading strategies based on current market sentiment.
-      # LTP Request
-      **Request Structure -**
-
-      { "Message": "LTP",
-
-      "EXC": "NSEFO",
-
-      "SECID": "35020" }
-
-      `Python`
-
-        ```
-
-        import asyncio
-        import websockets
-
-        async def connect_to_server():
-            async with websockets.connect('wss://wss1.mtsp.co.in:16108') as websocket:
-                response = await websocket.recv()
-                if "HandShake" in response:
-                  
-                    sc = "{\"Message\":\"LTP\",\"EXC\":\"NSEFO\",\"SECID\":\"35020\"}"
-                    await websocket.send(sc)
-                    while True:
-                      response = await websocket.recv()
-                      if "\"LTP\"" in response:
-                        print(response)
-                else:
-                    print("WebSocket connection failed")
-
-        asyncio.run(connect_to_server())
-
-        ```
-
-      `Node.js`
-
-        ```
-        const WebSocket = require('ws');
-
-        async function connect() {
-            const ws = new WebSocket('wss://wss1.mtsp.co.in:16108');
-
-            ws.on('open', () => ws.send('{"Message":"LTP","EXC":"NSEFO","SECID":"35020"}'));
-            ws.on('message', data => {
-                if (data instanceof Buffer) {
-                    // Convert binary buffer to string
-                    data = data.toString('utf-8');
-                }
-                console.log(data.includes('"LTP"') ? data : 'WebSocket connection failed');
-            });
-        }
-
-        connect();
-
-        ```
-
-
-      # Response
-      JSON Output - 
-        ```
-        {
-            "Message": "LTP",
-            "EXC": "NSEFO",
-            "SECID": "35020",
-            "LTP": "20915.00"
-        }
-
-        ```
-      LTP Response structure:
-
-      - Message: LTP
-      - EXC: Represents the exchange where the security is traded (e.g., "NSEFO").
-      - SECID: Represents the security identifier.
-      - LTP: Last traded price.
-
-  - name: OHLCL
-    description: |
-      OHLCL stands for Open, High, Low, Close. It's a set of data points commonly used in financial markets to summarize the trading activity of a security over a given period. This data is essential for technical analysis, charting, and understanding market trends.
-      # OHLCL Request
-      **Request Structure -**
-
-      {"Message": "OHLCL",
-
-      "EXC": "NSEFO",
-
-      "SECID": "35707"}
-
-
-      `Python`
-
-        ```
-
-        import asyncio
-        import websockets
-
-        async def connect_to_server():
-            async with websockets.connect('wss://wss1.mtsp.co.in:16108') as websocket:
-                response = await websocket.recv()
-                if "HandShake" in response:
-                  
-                    sc = "{\"Message\":\"OHLCL\",\"EXC\":\"NSEFO\",\"SECID\":\"35707\"}"
-                    await websocket.send(sc)
-                    while True:
-                      response = await websocket.recv()
-                      if "\"OHLCL\"" in response:
-                        print(response)
-                else:
-                    print("WebSocket connection failed")
-
-        asyncio.run(connect_to_server())
-
-        ```
-
-      `Node.js`
-
-        ```
-        const WebSocket = require('ws');
-
-        async function connect() {
-            const ws = new WebSocket('wss://wss1.mtsp.co.in:16108');
-
-            ws.on('open', () => ws.send('{"Message":"OHLCL","EXC":"NSEFO","SECID":"35707"}'));
-            ws.on('message', data => {
-                if (data instanceof Buffer) {
-                    // Convert binary buffer to string
-                    data = data.toString('utf-8');
-                }
-                console.log(data.includes('"OHLCL"') ? data : 'WebSocket connection failed');
-            });
-        }
-
-        connect();
-
-        ```
-
-
-      # Response
-      JSON Output - 
-
-        ```
-        {
-            "Message": "OHLCL",
-            "EXC": "NSEFO",
-            "SECID": "35707",
-            "O": "11015.00",
-            "H": "11099.25",
-            "L": "11013.10",
-            "C": "10985.00",
-            "LTP": "11092.05"
-        }
-
-        ```
-
-      OHLCL response structure:
-
-      - Message: OHLCL
-      - EXC: Represents the exchange where the security is traded (e.g., "NSEFO").
-      - SECID: Represents the security identifier.
-      - O: Open price.
-      - H: High price.
-      - L: Low price.
-      - C: Close price.
-      - LTP: Last traded price.
-
-  - name: Watch
-    description: |
-      The provided data includes essential information for tracking securities in financial markets. It covers details such as the exchange where the security is traded, its unique identifier, and recent trading activity. Other important data points encompass the total quantity and value traded, along with prices at the open, high, low, and close of trading sessions. Additionally, it includes timestamps for the last trade and broadcast, as well as open interest and volume-weighted average price. These details are vital for investors and traders to monitor market movements and make informed decisions.
-      # Watch Request
-      **Request Structure -**
-
-      { "Message": "Watch",
-
-      "EXC": "NSEFO",
-
-      "SECID": "71441" }
-
-      `Python`
-
-        ```
-
-        import asyncio
-        import websockets
-
-        async def connect_to_server():
-            async with websockets.connect('wss://wss1.mtsp.co.in:16108') as websocket:
-                response = await websocket.recv()
-                if "HandShake" in response:
-                  
-                    sc = "{\"Message\":\"Watch\",\"EXC\":\"NSEFO\",\"SECID\":\"71441\"}"
-                    await websocket.send(sc)
-                    while True:
-                      response = await websocket.recv()
-                      if "\"Watch\"" in response:
-                        print(response)
-                else:
-                    print("WebSocket connection failed")
-
-        asyncio.run(connect_to_server())
-
-        ```
-
-      `Node.js`
-
-        ```
-        const WebSocket = require('ws');
-
-        async function connect() {
-            const ws = new WebSocket('wss://wss1.mtsp.co.in:16108');
-
-            ws.on('open', () => ws.send('{"Message":"Watch","EXC":"NSEFO","SECID":"71441"}'));
-            ws.on('message', data => {
-                if (data instanceof Buffer) {
-                    // Convert binary buffer to string
-                    data = data.toString('utf-8');
-                }
-                console.log(data.includes('"Watch"') ? data : 'WebSocket connection failed');
-            });
-        }
-
-        connect();
-
-        ```
-
-
-      # Response
-      JSON Output -
-
-        ```
-        {
-            "Message": "Watch",
-            "EXC": "NSEFO",
-            "SECID": "71441",
-            "LTP": "22287.55",
-            "LTQ": "50",
-            "BP": "22285.05",
-            "BQ": "50",
-            "SP": "22287.05",
-            "SQ": "250",
-            "TQT": "1495350",
-            "TV": "332965.69659000001",
-            "BT": "1708663448",
-            "LLT": "1708663447",
-            "VWAP": "22266.74",
-            "OI": "11420900",
-            "O": "22285.10",
-            "H": "22344.45",
-            "L": "22235.10",
-            "C": "22243.25"
-        }
-
-        ```
-
-      Watch response structure:
-
-      - Message: Watch
-      - EXC: Represents the exchange where the security is traded (e.g., "NSEFO").
-      - SECID: Represents the security identifier.
-      - LTP: Last traded price.
-      - LTQ: Last traded quantity.
-      - BP: (L-1) Bid Price.
-      - BQ: (L-1) Bid Quantity.
-      - SP: Sell Price.
-      - SQ: Sell Quantity.
-      - TQT: Total quantity traded.
-      - TV: Total value traded.
-      - BT: Broadcast time.
-      - LLT: Last trade time.
-      - VWAP: Volume Weighted Average Price.
-      - OI: Open interest.
-      - O: Open price.
-      - H: High price.
-      - L: Low price.
-      - C: Close price.
-
-  - name: WS Login
-
-    description: |
-
-      `Python`
-
-      ```
-
-
-      import asyncio
-      import websockets
-
-      async def connect_to_server():
-          async with websockets.connect('wss://wss1.mtsp.co.in:16107') as websocket:
-              sc = "{\"Message\":\"Login\",\"API_KEY\":\".KAoiU$GCfrrNDN4H|qq<<XtG\",\"REQUEST_TOKEN\":\"9uGleQ4keI9zL!3oZ.9d\"}"
-              await websocket.send(sc)
-              while True:
-                response = await websocket.recv()
-                print( response )
-              return
-
-      asyncio.run(connect_to_server())
-
-      ```
-
-      `Node.js`
-
-      ```
-
-      const WebSocket = require('ws');
-
-      async function connectToServer() {
-          const ws = new WebSocket('wss://wss1.mtsp.co.in:16107');
-
-          ws.on('open', function open() {
-              const sc = "{\"Message\":\"Login\",\"API_KEY\":\".KAoiU$GCfrrNDN4H|qq<<XtG\",\"REQUEST_TOKEN\":\"9uGleQ4keI9zL!3oZ.9d\"}";
-              ws.send(sc);
-          });
-
-          ws.on('message', function incoming(data) {
-              console.log(data);
-          });
-      }
-
-      connectToServer();
-
-      ```
-
-      **Response 1** - 
-
-      When the websocket connection is established and the user is Successfuly logged in, a "success" response will be received. The connection will then remain open, awaiting further updates from the server, such as when a new order is placed.
-
-      ```
-
-      {"Message":"LoginResponse","Status":"success"}
-
-      ```
 
   - name: Order & Trade Response
     description: |
-      **Response 2** -
+        **Response 2** -
 
-      When an order is placed via API or through ATINS (outside of the websocket), this will provide the following response:
+        When an order is placed via API or through ATINS (outside of the websocket), this will provide the following response:
 
-      ```
+        ```
 
-      {
-          "Message": "Order",
-          "status": "Successful",
-          "data": {
-              "order_id": "23",
-              "parent_order_id": "6746",
-              "exchange_order_id": "",
-              "placed_by": "DAPI1",
-              "tradingsymbol": "RELIANCE",
-              "exchange": "NSECM",
-              "instrument_token": "2885",
-              "transaction_type": "Buy",
-              "order_type": "MARKET",
-              "status": "Unknown",
-              "product": "CNC",
-              "validity": "DAY",
-              "price": "0.00",
-              "userid": "DAPI1",
-              "quantity": "100",
-              "trigger_price": "0.00",
-              "pending_quantity": "100",
-              "filled_quantity": "0",
-              "disclosed_quantity": "0",
-              "order_timestamp": "02\/03\/2024 18:58:09",
-              "exchange_timestamp": "01\/01\/1970 05:30:00",
-              "status_message": "",
-              "tag": "HELLOMOTO2"
-          }
-      }
+        {
+            "Message": "Order",
+            "status": "Successful",
+            "data": {
+                "order_id": "23",
+                "parent_order_id": "6746",
+                "exchange_order_id": "",
+                "placed_by": "DAPI1",
+                "tradingsymbol": "RELIANCE",
+                "exchange": "NSECM",
+                "instrument_token": "2885",
+                "transaction_type": "Buy",
+                "order_type": "MARKET",
+                "status": "Unknown",
+                "product": "CNC",
+                "validity": "DAY",
+                "price": "0.00",
+                "userid": "DAPI1",
+                "quantity": "100",
+                "trigger_price": "0.00",
+                "pending_quantity": "100",
+                "filled_quantity": "0",
+                "disclosed_quantity": "0",
+                "order_timestamp": "02\/03\/2024 18:58:09",
+                "exchange_timestamp": "01\/01\/1970 05:30:00",
+                "status_message": "",
+                "tag": "HELLOMOTO2"
+            }
+        }
 
-      {
-          "Message": "Trade",
-          "status": "Successful",
-          "data": {
-              "trade_id": "12440",
-              "order_id": "6746",
-              "exchange_trade_id": "T28856746975208",
-              "exchange_order_id": "O28856746",
-              "Exchange": "NSECM",
-              "tradingsymbol": "RELIANCE",
-              "instrument_token": "2885",
-              "tag": "HELLOMOTO2",                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
-              "product": "CNC",
-              "average_price": "2939.50",
-              "price": "2939.50",
-              "quantity": "100",
-              "pending_quantity": "0",
-              "transaction_type": "BUY",
-              "fill_timestamp": "2024-03-03 00:28:09",
-              "order_timestamp": "00:28:09",
-              "exchange_timestamp": "2024-03-03 00:28:09"
-          }
-      }
+        {
+            "Message": "Trade",
+            "status": "Successful",
+            "data": {
+                "trade_id": "12440",
+                "order_id": "6746",
+                "exchange_trade_id": "T28856746975208",
+                "exchange_order_id": "O28856746",
+                "Exchange": "NSECM",
+                "tradingsymbol": "RELIANCE",
+                "instrument_token": "2885",
+                "tag": "HELLOMOTO2",                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+                "product": "CNC",
+                "average_price": "2939.50",
+                "price": "2939.50",
+                "quantity": "100",
+                "pending_quantity": "0",
+                "transaction_type": "BUY",
+                "fill_timestamp": "2024-03-03 00:28:09",
+                "order_timestamp": "00:28:09",
+                "exchange_timestamp": "2024-03-03 00:28:09"
+            }
+        }
 
-      ```
+        ```
 
 x-tagGroups:
   - name: TRADE API
@@ -805,11 +808,11 @@ x-tagGroups:
       - Watch
   - name: Interactive WS API
     description: |
-      The WebSocket Demo descripton
+      The WebSocket Demo descripton 
     tags:
       - WS Login
       - Order & Trade Response
-
+      
 paths:
   /connect/login:
     post:
@@ -830,6 +833,7 @@ paths:
                   description: secretKey to validate, it will look like "ZOYWyg6U5DfJ@D<NR!%3z<PR"
                   type: string
 
+                  
       parameters:
         - name: Api-Version
           in: header
@@ -840,8 +844,8 @@ paths:
             default: 3
           # example: '3'
       responses:
-        "200":
-          description: Successful response click `>` to expand
+        '200':
+          description: Successful response [click `>` to expand]
           content:
             application/json:
               schema:
@@ -860,24 +864,25 @@ paths:
                         description: It generates the request token, and this token remains valid for a duration of 24 hours from its generation time.
                         example: o%sZ|iPUWe7xfUQgBXKX
 
-        "404":
+        '404':
           description: Login fail
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: unsuccessful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       error:
                         type: string
                         example: No Application Found
+        
 
       x-codeSamples:
         - lang: Python
@@ -960,33 +965,33 @@ paths:
             type: string
             default: 3
       responses:
-        "200":
+        '200':
           description: Successful response
-
+  
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: successful
-
-        "401":
+ 
+        '401':
           description: Can't Logout
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: unsuccessful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       error:
                         type: string
@@ -1051,58 +1056,58 @@ paths:
             default: 3
 
       responses:
-        "200":
-          description: Successful response click `>` to expand
+        '200':
+          description: Successful response [click `>` to expand]
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: successful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       user_type:
                         type: string
                         description: User's registered role at the broker. This will be individual for all retail users
-                        example: "3"
+                        example: '3'
                       email:
                         type: string
                         description: User's email address
-                        example: "info@multitradesoftech.com"
+                        example: 'info@multitradesoftech.com'
                       user_name:
                         type: string
                         description: User name of the client
-                        example: "MTS_User"
+                        example: 'MTS_User'
                       user_shortname:
                         type: string
                         description: User's short name or alias
-                        example: "User"
+                        example: 'User'
                       broker:
                         type: string
                         description: The broker ID
-                        example: ""
+                        example: ''
                       exchanges:
                         type: string
                         description: Exchanges enabled for trading on the user's account
-                        example: ""
+                        example: ''
                       products:
                         type: array
-                        description: Margin product types enabled for the user
+                        description: 	Margin product types enabled for the user
                         items:
                           type: string
-                          description:
+                          description: 
                         example:
                           - CNC
                           - NRML
                       avatar_url:
                         type: string
-                        description: URL of user's avatar, if there's one
-                        example: ""
+                        description: URL of user's avatar, if there's one 
+                        example: ''
                       user_id:
                         type: string
                         description: The unique user id registered with the broker and the exchanges
@@ -1110,7 +1115,7 @@ paths:
                       api_key:
                         type: string
                         description: The API key for which the authentication was performed
-                        example: ""
+                        example: ''
                       access_token:
                         type: string
                         description: Generated access token during login. It remains valid for a duration of 24 hours from its generation time.
@@ -1120,7 +1125,7 @@ paths:
                         description: Order types enabled for the user
                         items:
                           type: string
-                          description:
+                          description: 
                         example:
                           - MARKET
                           - LIMIT
@@ -1130,20 +1135,20 @@ paths:
                         type: string
                         description: The time of the user's most recent login.
                         example: 2024-02-0313:15:21
-        "401":
+        '401':
           description: Token not valid
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: unsuccessful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       error:
                         type: string
@@ -1205,23 +1210,23 @@ paths:
           schema:
             type: string
             default: 3
-
+            
           # example: '3'
       responses:
-        "200":
-          description: Successful response click `>` to expand
+        '200':
+          description: Successful response [click `>` to expand]
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: successful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       user_id:
                         type: string
@@ -1230,23 +1235,23 @@ paths:
                       user_type:
                         type: string
                         description: User's registered role at the broker. This will be individual for all retail users
-                        example: "3"
+                        example: '3'
                       email:
                         type: string
                         description: User's email address
-                        example: "info@multitradesoftech.com"
+                        example: 'info@multitradesoftech.com'
                       user_name:
                         type: string
                         description: User name of the client
-                        example: "MTS_User"
+                        example: 'MTS_User'
                       user_shortname:
                         type: string
                         description: User's short name or alias
-                        example: "User"
+                        example: 'User'
                       broker:
                         type: string
                         description: The broker ID
-                        example: ""
+                        example: ''
                       exchanges:
                         type: array
                         description: Exchanges enabled for trading on the user's account
@@ -1293,18 +1298,18 @@ paths:
                       avatar_url:
                         type: string
                         description: URL of user's avatar, if there's one
-                        example: ""
-        "403":
+                        example: ''
+        '403':
           description: Unauthorized
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   error:
                     type: string
-                    example: "Invalid_Authorization Combination or Invalid API_key."
+                    example: 'Invalid_Authorization Combination or Invalid API_key.'
 
       x-codeSamples:
         - lang: Python
@@ -1368,342 +1373,342 @@ paths:
             default: 3
           # example: '3'
       responses:
-        "200":
-          description: Successful response click `>` to expand
+        '200':
+          description: Successful response [click `>` to expand]
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
-                properties:
+                description: [click `>` to expand]
+                properties: 
                   status:
                     type: string
-                    description:
+                    description: 
                     example: successful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       CM:
                         type: object
-                        description: click `>` to expand
+                        description: [click `>` to expand]
                         properties:
-                          enabled:
+                          enabled: 
                             type: bool
                             description: Indicates whether the segment is enabled for the user.
-                            example: "true"
+                            example: 'true'
                           net:
                             type: string
                             description: Net cash balance available for trading (**intraday_payin + adhoc_margin + collateral**)
-                            example: "186819082.50"
+                            example: '186819082.50'
                           available:
                             type: object
-                            description: Details about available funds. click `>` to expand
+                            description: Details about available funds. [click `>` to expand]
                             properties:
                               adhoc_margin:
                                 type: string
                                 description: Adhoc Margin
-                                example: "0.00"
+                                example: '0.00'
                               cash:
                                 type: string
                                 description: Cash credit
-                                example: "436819082"
+                                example: '436819082'
                               collateral:
                                 type: string
                                 description: Collateral
-                                example: "0.00"
+                                example: '0.00'
                               intraday_payin:
                                 type: string
                                 description: Intraday Payin
-                                example: "0"
+                                example: '0'
                           utilized:
                             type: object
-                            description: Details about utilized funds. click `>` to expand
+                            description: Details about utilized funds. [click `>` to expand]
                             properties:
                               debits:
                                 type: string
                                 description: Debits
-                                example: "249999999.5"
+                                example: '249999999.5'
                               exposure:
                                 type: string
                                 description: Exposure margins
-                                example: "0.00"
+                                example: '0.00'
                               m2m_realised:
                                 type: string
                                 description: Realised profit and loss
-                                example: "0"
+                                example: '0'
                               m2m_unrealised:
                                 type: string
                                 description: unrealised profit and loss
-                                example: "0.00"
+                                example: '0.00'
                               option_premium:
                                 type: string
                                 description: Option Premium
-                                example: "0"
+                                example: '0'
                               payout:
                                 type: string
                                 description: Payout amount
-                                example: "0.00"
+                                example: '0.00'
                               span:
                                 type: string
                                 description: Span margins
-                                example: "0.00"
+                                example: '0.00'
                               holding_sales:
                                 type: string
                                 description: Holding amount
-                                example: "0.00"
+                                example: '0.00'
                               turnover:
                                 type: string
-                                description: Total turnover of the day
-                                example: "0.00"
+                                description:  Total turnover of the day
+                                example: '0.00'
                       DEPOSIT:
                         type: object
-                        description: click `>` to expand
+                        description: [click `>` to expand]
                         properties:
-                          enabled:
+                          enabled: 
                             type: bool
                             description: Indicates whether the segment is enabled for the user.
-                            example: "true"
+                            example: 'true'
                           net:
                             type: string
                             description: Net cash balance available for trading (**intraday_payin + adhoc_margin + collateral**)
-                            example: "186819082.50"
+                            example: '186819082.50'
                           available:
                             type: object
-                            description: Details about available funds. click `>` to expand
+                            description: Details about available funds. [click `>` to expand]
                             properties:
                               adhoc_margin:
                                 type: string
                                 description: Adhoc Margin
-                                example: "0.00"
+                                example: '0.00'
                               cash:
                                 type: string
                                 description: Cash credit
-                                example: "545235633"
+                                example: '545235633'
                               collateral:
                                 type: string
                                 description: Collateral
-                                example: "0.00"
+                                example: '0.00'
                               intraday_payin:
                                 type: string
                                 description: Intraday Payin
-                                example: "0"
+                                example: '0'
                           utilized:
                             type: object
-                            description: Details about utilized funds. click `>` to expand
+                            description: Details about utilized funds. [click `>` to expand]
                             properties:
                               debits:
                                 type: string
                                 description: Debits
-                                example: "358416550.5"
+                                example: '358416550.5'
                               exposure:
                                 type: string
                                 description: Exposure margins
-                                example: "0.00"
+                                example: '0.00'
                               m2m_realised:
                                 type: string
                                 description: Realised profit and loss
-                                example: "0"
+                                example: '0'
                               m2m_unrealised:
                                 type: string
                                 description: unrealised profit and loss
-                                example: "0.00"
+                                example: '0.00'
                               option_premium:
                                 type: string
                                 description: Option Premium
-                                example: "0"
+                                example: '0'
                               payout:
                                 type: string
                                 description: Payout amount
-                                example: "0.00"
+                                example: '0.00'
                               span:
                                 type: string
                                 description: Span margins
-                                example: "0.00"
+                                example: '0.00'
                               holding_sales:
                                 type: string
                                 description: Holding amount
-                                example: "0.00"
+                                example: '0.00'
                               turnover:
                                 type: string
-                                description: Total turnover of the day
-                                example: "0.00"
+                                description:  Total turnover of the day
+                                example: '0.00'
                       FO:
                         type: object
-                        description: click `>` to expand
+                        description: [click `>` to expand]
                         properties:
-                          enabled:
+                          enabled: 
                             type: bool
                             description: Indicates whether the segment is enabled for the user.
-                            example: "true"
+                            example: 'true'
                           net:
                             type: string
                             description: Net cash balance available for trading (**intraday_payin + adhoc_margin + collateral**)
-                            example: "386819082.50"
+                            example: '386819082.50'
                           available:
                             type: object
-                            description: Details about available funds. click `>` to expand
+                            description: Details about available funds. [click `>` to expand]
                             properties:
                               adhoc_margin:
                                 type: string
                                 description: Adhoc Margin
-                                example: "0.00"
+                                example: '0.00'
                               cash:
                                 type: string
                                 description: Cash credit
-                                example: "948579472"
+                                example: '948579472'
                               collateral:
                                 type: string
                                 description: Collateral
-                                example: "0.00"
+                                example: '0.00'
                               intraday_payin:
                                 type: string
                                 description: Intraday Payin
-                                example: "0"
+                                example: '0'
                           utilized:
                             type: object
-                            description: Details about utilized funds. click `>` to expand
+                            description: Details about utilized funds. [click `>` to expand]
                             properties:
                               debits:
                                 type: string
                                 description: Debits
-                                example: "561760389.5"
+                                example: '561760389.5'
                               exposure:
                                 type: string
                                 description: Exposure margins
-                                example: "0.00"
+                                example: '0.00'
                               m2m_realised:
                                 type: string
                                 description: Realised profit and loss
-                                example: "0"
+                                example: '0'
                               m2m_unrealised:
                                 type: string
                                 description: unrealised profit and loss
-                                example: "0.00"
+                                example: '0.00'
                               option_premium:
                                 type: string
                                 description: Option Premium
-                                example: "0"
+                                example: '0'
                               payout:
                                 type: string
                                 description: Payout amount
-                                example: "0.00"
+                                example: '0.00'
                               span:
                                 type: string
                                 description: Span margins
-                                example: "0.00"
+                                example: '0.00'
                               holding_sales:
                                 type: string
                                 description: Holding amount
-                                example: "0.00"
+                                example: '0.00'
                               turnover:
                                 type: string
-                                description: Total turnover of the day
-                                example: "0.00"
+                                description:  Total turnover of the day
+                                example: '0.00'
                       MCX:
                         type: object
-                        description: click `>` to expand
+                        description: [click `>` to expand]
                         properties:
-                          enabled:
+                          enabled: 
                             type: bool
                             description: Indicates whether the segment is enabled for the user.
-                            example: "true"
+                            example: 'true'
                           net:
                             type: string
                             description: Net cash balance available for trading (**intraday_payin + adhoc_margin + collateral**)
-                            example: "385819082.50"
+                            example: '385819082.50'
                           available:
                             type: object
-                            description: Details about available funds. click `>` to expand
+                            description: Details about available funds. [click `>` to expand]
                             properties:
                               adhoc_margin:
                                 type: string
                                 description: Adhoc Margin
-                                example: "0.00"
+                                example: '0.00'
                               cash:
                                 type: string
                                 description: Cash credit
-                                example: "873027432.00"
+                                example: '873027432.00'
                               collateral:
                                 type: string
                                 description: Collateral
-                                example: "0.00"
+                                example: '0.00'
                               intraday_payin:
                                 type: string
                                 description: Intraday Payin
-                                example: "0"
+                                example: '0'
                           utilized:
                             type: object
-                            description: Details about utilized funds. click `>` to expand
+                            description: Details about utilized funds. [click `>` to expand]
                             properties:
                               debits:
                                 type: string
                                 description: Debits
-                                example: "487208349.5"
+                                example: '487208349.5'
                               exposure:
                                 type: string
                                 description: Exposure margins
-                                example: "0.00"
+                                example: '0.00'
                               m2m_realised:
                                 type: string
                                 description: Realised profit and loss
-                                example: "0"
+                                example: '0'
                               m2m_unrealised:
                                 type: string
                                 description: unrealised profit and loss
-                                example: "0.00"
+                                example: '0.00'
                               option_premium:
                                 type: string
                                 description: Option Premium
-                                example: "0"
+                                example: '0'
                               payout:
                                 type: string
                                 description: Payout amount
-                                example: "0.00"
+                                example: '0.00'
                               span:
                                 type: string
                                 description: Span margins
-                                example: "0.00"
+                                example: '0.00'
                               holding_sales:
                                 type: string
                                 description: Holding amount
-                                example: "0.00"
+                                example: '0.00'
                               turnover:
                                 type: string
-                                description: Total turnover of the day
-                                example: "0.00"
-        "404":
+                                description:  Total turnover of the day
+                                example: '0.00'
+        '404':
           description: Could Not Find The Segment
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: unsuccessful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       error:
                         type: string
                         example: Could Not Find The Segment
-        "400":
+        '400':
           description: Data Not Available
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: unsuccessful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       error:
                         type: string
@@ -1751,6 +1756,8 @@ paths:
                 console.error('Error:', error);
               });
 
+
+
   /orders/regular:
     post:
       tags:
@@ -1767,7 +1774,7 @@ paths:
                 tradingsecurity:
                   type: string
                   description: Unique Security_ID of the script, example "3045"
-                  example: "3045"
+                  example: '3045'
                 exchange:
                   type: string
                   description: "BSECM, BSECOM, BSEFO,BSEINX, BSEFX, CQG, MCX, NSECD, NSECM, NSEFO, NSEIFSC, NSESLBM, DGCX, IB, MAXXTRADER, NCDEX, NSECOM "
@@ -1783,7 +1790,7 @@ paths:
                 quantity:
                   type: string
                   description: "Example: 900"
-                  example: "1000"
+                  example: '1000'
                 validity:
                   type: string
                   description: "DAY, IOC, GTT, GTC, OPG, FOK, GTX, GTD, EOS, FAK, ATO, ATC "
@@ -1791,7 +1798,7 @@ paths:
                 price:
                   type: string
                   description: "Example: 1900.00"
-                  example: "1900.00"
+                  example: '1900.00'
                 product:
                   type: string
                   description: "CNC, NRML"
@@ -1812,7 +1819,7 @@ paths:
                   type: string
                   description: "The user id of the user, provided by Multitrade `Optional`"
                   example: "DEPI1"
-
+                
       parameters:
         - name: Api-Version
           in: header
@@ -1823,8 +1830,8 @@ paths:
             default: 3
           # example: '3'
       responses:
-        "200":
-          description: Successful response click `>` to expand
+        '200':
+          description: Successful response [click `>` to expand]
           content:
             application/json:
               schema:
@@ -1835,26 +1842,26 @@ paths:
                     example: successful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       orderid:
                         type: string
                         description: It will return orderId of the trade
                         example: "128439"
-        "401":
+        '401':
           description: Bad Request
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: unsuccessful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       error:
                         type: string
@@ -1862,6 +1869,7 @@ paths:
                           INVALID_TRANSACTION_TYPE/ INVALID_ORDER_TYPE/
                           INVALID_PRODUCT_TYPE/ Invalid Validity Type/ Invalid Request Token/ 
                           Invalid Api Key/ Invalid Open Close
+
 
       x-codeSamples:
         - lang: Python
@@ -1968,13 +1976,13 @@ paths:
             default: 3
 
       responses:
-        "200":
-          description: Successful response click `>` to expand
+        '200':
+          description: Successful response [click `>` to expand]
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
@@ -1982,130 +1990,337 @@ paths:
                   data:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        order_id:
-                          type: string
-                          description: Unique order ID, generated while placing the trade
-                          example: "2918"
-                        parent_order_id:
-                          type: string
-                          description: The parent ID of the order
-                          example: "2918"
-                        exchange_order_id:
-                          type: string
-                          description: ID assigned by the exchange for the order
-                          example: "O30452918"
-                        placed_by:
-                          type: string
-                          description: Identifier for the entity that placed the order
-                          example: "LO1"
-                        tradingsymbol:
-                          type: string
-                          description: Symbol of the traded instrument
+                      - type: object
+                        properties:
+                          order_id:
+                            type: string
+                            description: Unique order ID, generated while placing the trade
+                            example: "2918"
+                          parent_order_id:
+                            type: string
+                            description: The parent ID of the order
+                            example: "2918"
+                          exchange_order_id:
+                            type: string
+                            description: ID assigned by the exchange for the order
+                            example: "O30452918"
+                          placed_by:
+                            type: string
+                            description: Identifier for the entity that placed the order
+                            example: "LO1"
+                          tradingsymbol:
+                            type: string
+                            description: Symbol of the traded instrument
 
-                          example: "SBIN"
-                        exchange:
-                          type: string
-                          description: The exchange where the trade occurred
+                            example: "SBIN"
+                          exchange:
+                            type: string
+                            description: The exchange where the trade occurred
 
-                          example: "NSECM"
-                        instrument_token:
-                          type: string
-                          description: The numerical identifier issued by the exchange representing the instrument. Used for subscribing to live market data over WebSocket.
+                            example: "NSECM"
+                          instrument_token:
+                            type: string
+                            description: The numerical identifier issued by the exchange representing the instrument. Used for subscribing to live market data over WebSocket.
 
-                          example: "3045"
-                        transaction_type:
-                          type: string
-                          description: Type of transaction (e.g., BUY or SELL)
+                            example: "3045"
+                          transaction_type:
+                            type: string
+                            description:  Type of transaction (e.g., BUY or SELL)
 
-                          example: "Sell"
-                        order_type:
-                          type: string
-                          description: The type of the order (e.g., MARKET, LIMIT, SL, SL-M)
+                            example: "Sell"
+                          order_type:
+                            type: string
+                            description: The type of the order (e.g., MARKET, LIMIT, SL, SL-M)
 
-                          example: "MARKET"
-                        status:
-                          type: string
-                          description: The status of the order
+                            example: "MARKET"
+                          status:
+                            type: string
+                            description: The status of the order
 
-                          example: "Execute"
-                        product:
-                          type: string
-                          description: Type of product (e.g., CNC)
+                            example: "Execute"
+                          product:
+                            type: string
+                            description: Type of product (e.g., CNC)
 
-                          example: "CNC"
-                        validity:
-                          type: string
-                          description: The validity of the order
+                            example: "CNC"
+                          validity:
+                            type: string
+                            description: The validity of the order
+                            
+                            example: "DAY"
+                          price:
+                            type: string
+                            description: Price at which the quantity was filled
+                            example: "778.000000"
+                          userid:
+                            type: string
+                            description: User ID associated with the trade
+                            example: "LO1"
+                          quantity:
+                            type: string
+                            description: Number of units traded
+                            example: "100"
+                          trigger_price:
+                            type: string
+                            description: The trigger price of the order
+                            example: "0.000000"
+                          average_price:
+                            type: string
+                            description: Price at which the quantity was filled
+                            example: "747.700000"
+                          pending_quantity:
+                            type: string
+                            description: Pending quantity to be filled
+                            example: "0"
+                          filled_quantity:
+                            type: string
+                            description: Quantity that's been filled
+                            example: "100"
+                          disclosed_quantity:
+                            type: string
+                            description: Quantity to be disclosed (may be diffent from actual quantity) to the public exhange orderbook. Only for equities.
+                            example: "0"
+                          market_protection:
+                            type: string
+                            description: The market protection of the order
+                            example: "0.00"
+                          order_timestamp:
+                            type: string
+                            description: Timestamp at which the order was registered by the API
+                            example: "23/03/202415:01:11"
+                          exchange_timestamp:
+                            type: string
+                            description: Timestamp at which the order was registered by the exchange
+                            example: "23/03/202420:31:11"
+                          status_message:
+                            type: string
+                            description: Textual description of the order's status. Failed orders come with human readable explanation
+                            example: ""
+                          tag:
+                            type: string
+                            description: Additional tag or label (if any)
+                            example: "ReferenceTag"
 
-                          example: "DAY"
-                        price:
-                          type: string
-                          description: Price at which the quantity was filled
-                          example: "778.000000"
-                        userid:
-                          type: string
-                          description: User ID associated with the trade
-                          example: "LO1"
-                        quantity:
-                          type: string
-                          description: Number of units traded
-                          example: "100"
-                        trigger_price:
-                          type: string
-                          description: The trigger price of the order
-                          example: "0.000000"
-                        average_price:
-                          type: string
-                          description: Price at which the quantity was filled
-                          example: "747.700000"
-                        pending_quantity:
-                          type: string
-                          description: Pending quantity to be filled
-                          example: "0"
-                        filled_quantity:
-                          type: string
-                          description: Quantity that's been filled
-                          example: "100"
-                        disclosed_quantity:
-                          type: string
-                          description: Quantity to be disclosed (may be diffent from actual quantity) to the public exhange orderbook. Only for equities.
-                          example: "0"
-                        market_protection:
-                          type: string
-                          description: The market protection of the order
-                          example: "0.00"
-                        order_timestamp:
-                          type: string
-                          description: Timestamp at which the order was registered by the API
-                          example: "23/03/202415:01:11"
-                        exchange_timestamp:
-                          type: string
-                          description: Timestamp at which the order was registered by the exchange
-                          example: "23/03/202420:31:11"
-                        status_message:
-                          type: string
-                          description: Textual description of the order's status. Failed orders come with human readable explanation
-                          example: ""
-                        tag:
-                          type: string
-                          description: Additional tag or label (if any)
-                          example: "ReferenceTag"
-        "401":
+                      - type: object
+                        properties:
+                          order_id:
+                            type: string
+                            description: Unique order ID, generated while placing the trade
+                            example: "2919"
+                          parent_order_id:
+                            type: string
+                            description: The parent ID of the order
+                            example: "2919"
+                          exchange_order_id:
+                            type: string
+                            description: ID assigned by the exchange for the order
+                            example: "O30452919"
+                          placed_by:
+                            type: string
+                            description: Identifier for the entity that placed the order
+                            example: "LO1"
+                          tradingsymbol:
+                            type: string
+                            description: Symbol of the traded instrument
+                            example: "SBIN"
+                          exchange:
+                            type: string
+                            description: The exchange where the trade occurred
+                            example: "NSECM"
+                          instrument_token:
+                            type: string
+                            description: The numerical identifier issued by the exchange representing the instrument. Used for subscribing to live market data over WebSocket.
+                            example: "3045"
+                          transaction_type:
+                            type: string
+                            description:  Type of transaction (e.g., BUY or SELL)
+                            example: "Sell"
+                          order_type:
+                            type: string
+                            description: The type of the order (e.g., MARKET, LIMIT, SL, SL-M)
+                            example: "MARKET"
+                          status:
+                            type: string
+                            description: The status of the order
+                            example: "Execute"
+                          product:
+                            type: string
+                            description: Type of product (e.g., CNC)
+                            example: "CNC"
+                          validity:
+                            type: string
+                            description: The validity of the order
+                            example: "DAY"
+                          price:
+                            type: string
+                            description: Price at which the quantity was filled
+                            example: "778.000000"
+                          userid:
+                            type: string
+                            description: User ID associated with the trade
+                            example: "LO1"
+                          quantity:
+                            type: string
+                            description: Number of units traded
+                            example: "100"
+                          trigger_price:
+                            type: string
+                            description: The trigger price of the order
+                            example: "0.000000"
+                          average_price:
+                            type: string
+                            description: Price at which the quantity was filled
+                            example: "747.400000"
+                          pending_quantity:
+                            type: string
+                            description: Pending quantity to be filled
+                            example: "0"
+                          filled_quantity:
+                            type: string
+                            description: Quantity that's been filled
+                            example: "100"
+                          disclosed_quantity:
+                            type: string
+                            description: Quantity to be disclosed (may be diffent from actual quantity) to the public exhange orderbook. Only for equities.
+                            example: "0"
+                          market_protection:
+                            type: string
+                            description: The market protection of the order
+                            example: "0.00"
+                          order_timestamp:
+                            type: string
+                            description: Timestamp at which the order was registered by the API
+                            example: "23/03/202415:01:19"
+                          exchange_timestamp:
+                            type: string
+                            description: Timestamp at which the order was registered by the exchange
+                            example: "23/03/202420:31:19"
+                          status_message:
+                            type: string
+                            description: Textual description of the order's status. Failed orders come with human readable explanation
+                            example: ""
+                          tag:
+                            type: string
+                            description: Additional tag or label (if any)
+                            example: "MTS"
+
+                    
+                      - type: object
+                        properties:
+                          order_id:
+                            type: string
+                            description: Unique order ID, generated while placing the trade
+                            example: "2920"
+                          parent_order_id:
+                            type: string
+                            description: The parent ID of the order
+                            example: "2920"
+                          exchange_order_id:
+                            type: string
+                            description: ID assigned by the exchange for the order
+                            example: "O30452920"
+                          placed_by:
+                            type: string
+                            description: Identifier for the entity that placed the order
+                            example: "LO1"
+                          tradingsymbol:
+                            type: string
+                            description: Symbol of the traded instrument
+                            example: "SBIN"
+                          exchange:
+                            type: string
+                            description: The exchange where the trade occurred
+                            example: "NSECM"
+                          instrument_token:
+                            type: string
+                            description: The numerical identifier issued by the exchange representing the instrument. Used for subscribing to live market data over WebSocket.
+                            example: "3045"
+                          transaction_type:
+                            type: string
+                            description:  Type of transaction (e.g., BUY or SELL)
+                            example: "Sell"
+                          order_type:
+                            type: string
+                            description: The type of the order (e.g., MARKET, LIMIT, SL, SL-M)
+                            example: "MARKET"
+                          status:
+                            type: string
+                            description: The status of the order
+                            example: "Execute"
+                          product:
+                            type: string
+                            description: Type of product (e.g., CNC)
+                            example: "NRML"
+                          validity:
+                            type: string
+                            description: The validity of the order
+                            example: "DAY"
+                          price:
+                            type: string
+                            description: Price at which the quantity was filled
+                            example: "778.000000"
+                          userid:
+                            type: string
+                            description: User ID associated with the trade
+                            example: "LO1"
+                          quantity:
+                            type: string
+                            description: Number of units traded
+                            example: "100"
+                          trigger_price:
+                            type: string
+                            description: The trigger price of the order
+                            example: "0.000000"
+                          average_price:
+                            type: string
+                            description: Price at which the quantity was filled
+                            example: "748.050000"
+                          pending_quantity:
+                            type: string
+                            description: Pending quantity to be filled
+                            example: "0"
+                          filled_quantity:
+                            type: string
+                            description: Quantity that's been filled
+                            example: "100"
+                          disclosed_quantity:
+                            type: string
+                            description: Quantity to be disclosed (may be diffent from actual quantity) to the public exhange orderbook. Only for equities.
+                            example: "0"
+                          market_protection:
+                            type: string
+                            description: The market protection of the order
+                            example: "0.00"
+                          order_timestamp:
+                            type: string
+                            description: Timestamp at which the order was registered by the API
+                            example: "23/03/202415:02:24"
+                          exchange_timestamp:
+                            type: string
+                            description: Timestamp at which the order was registered by the exchange
+                            example: "23/03/202420:32:24"
+                          status_message:
+                            type: string
+                            description: Textual description of the order's status. Failed orders come with human readable explanation
+                            example: ""
+                          tag:
+                            type: string
+                            description: Additional tag or label (if any)
+                            example: "ReferenceTag"
+        '401':
           description: Token not valid
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: unsuccessful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       error:
                         type: string
@@ -2150,6 +2365,7 @@ paths:
               .catch(error => {
                 console.error('Error:', error.message);
               });
+ 
 
   /orders/{orderid}:
     get:
@@ -2169,8 +2385,8 @@ paths:
             default: 3
 
       responses:
-        "200":
-          description: Successful response click `>` to expand
+        '200':
+          description: Successful response [click `>` to expand]
           content:
             application/json:
               schema:
@@ -2218,7 +2434,7 @@ paths:
                           example: "3045"
                         transaction_type:
                           type: string
-                          description: Type of transaction (e.g., BUY or SELL)
+                          description:  Type of transaction (e.g., BUY or SELL)
                           example: "Sell"
                         order_type:
                           type: string
@@ -2284,20 +2500,20 @@ paths:
                           type: string
                           description: Additional tag or label (if any)
                           example: "ReferenceTag"
-        "401":
+        '401':
           description: Token not valid
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: unsuccessful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       error:
                         type: string
@@ -2361,8 +2577,8 @@ paths:
             default: 3
 
       responses:
-        "200":
-          description: Successful response click `>` to expand
+        '200':
+          description: Successful response [click `>` to expand]
           content:
             application/json:
               schema:
@@ -2410,7 +2626,7 @@ paths:
                           example: "3045"
                         transaction_type:
                           type: string
-                          description: Type of transaction (e.g., BUY or SELL)
+                          description:  Type of transaction (e.g., BUY or SELL)
                           example: "Sell"
                         order_type:
                           type: string
@@ -2476,20 +2692,20 @@ paths:
                           type: string
                           description: Additional tag or label (if any)
                           example: "ReferenceTag"
-        "401":
+        '401':
           description: Token not valid
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: unsuccessful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       error:
                         type: string
@@ -2551,15 +2767,15 @@ paths:
                 order_type:
                   type: string
                   description: "MARKET, LIMIT, SL, SL-M"
-                  example: "MARKET   "
+                  example: 'MARKET   '
                 quantity:
                   type: string
                   description: Order Quantity is the number of Sell or Buy orders
-                  example: "5"
+                  example: '5'
                 price:
                   type: string
                   description: This is a price that a buyer wishes to purchase a security at, hence the price is delineated by the buyer.
-                  example: "500"
+                  example: '500'
                 validity:
                   type: string
                   description: "DAY, IOC, GTT, GTC, OPG, FOK, GTX, GTD, EOS, FAK, ATO, ATC "
@@ -2576,7 +2792,8 @@ paths:
                   type: string
                   description: "The user id of the user, provided by Multitrade `Optional`"
                   example: "DEPI1"
-
+                  
+                
       parameters:
         - name: Api-Version
           in: header
@@ -2587,57 +2804,57 @@ paths:
             default: 3
           # example: '3'
       responses:
-        "200":
-          description: Successful response click `>` to expand
+        '200':
+          description: Successful response [click `>` to expand]
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: successful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       orderid:
                         type: string
                         description: It will return orderId of the order
                         example: "128439"
-        "401":
+        '401':
           description: API key not matched
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: unsuccessful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       error:
                         type: string
                         example: API_KEY_NOT_MATCHED
-        "408":
+        '408':
           description: API Client not connected
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: unsuccessful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       error:
                         type: string
@@ -2737,43 +2954,44 @@ paths:
             default: 3
           # example: '3'
       responses:
-        "200":
-          description: Successful response click `>` to expand
+        '200':
+          description: Successful response [click `>` to expand]
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: successful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       orderid:
                         type: string
                         description: It will return orderId of the trade
                         example: "128439"
-        "404":
+        '404':
           description: No Orders found
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: unsuccessful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       error:
                         type: string
                         example: No Orders Found
+
 
       x-codeSamples:
         - lang: Python
@@ -2845,39 +3063,39 @@ paths:
             default: 3
           # example: '3'
       responses:
-        "200":
-          description: Successful response click `>` to expand
+        '200':
+          description: Successful response [click `>` to expand]
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: successful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       order_id:
                         type: string
                         description: It will return orderId of the trade.
-                        example: "194719"
-        "401":
+                        example: '194719'
+        '401':
           description: Invalid access token
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: unsuccessful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       error:
                         type: string
@@ -2923,6 +3141,7 @@ paths:
                 console.error('Error:', error);
               });
 
+  
         - lang: curl
           source: >
             curl --location --request DELETE
@@ -2939,6 +3158,7 @@ paths:
       description: |
         When any order gets executed, a new trade event is generated by the server. Clients can listen to these events by registering to receive them.
 
+      
       security:
         - ApiKeyAuth: []
       parameters:
@@ -2951,101 +3171,233 @@ paths:
             default: 3
           # example: '3'
       responses:
-        "200":
-          description: Successful response click `>` to expand
+        '200':
+          description: Successful response [click `>` to expand]
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: successful
                   data:
                     type: array
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     items:
-                      type: object
-                      properties:
-                        trade_id:
-                          type: string
-                          example: "1740"
-                        order_id:
-                          type: string
-                          description: Unique order ID, generated while placing the trade
-                          example: "22"
-                        exchange:
-                          type: string
-                          description: The exchange where the trade occurred
-                          example: "NSECM"
-                        tradingsymbol:
-                          type: string
-                          description: Symbol of the traded instrument
-                          example: "SBIN"
-                        instrument_token:
-                          type: string
-                          description: The numerical identifier issued by the exchange representing the instrument. Used for subscribing to live market data over WebSocket.
-                          example: "NSECM"
-                        product:
-                          type: string
-                          description: Type of product (e.g., CNC)
-                          example: "CNC"
-                        average_price:
-                          type: string
-                          description: Price at which the quantity was filled
-                          example: "747.70000000000005"
-                        quantity:
-                          type: string
-                          description: Number of units traded
-                          example: "100"
-                        tag:
-                          type: string
-                          description: Additional tag or label (if any)
-                          example: "ReferenceTag"
-                        placed_by:
-                          type: string
-                          description: Identifier for the entity that placed the order
-                          example: "LO1"
-                        userid:
-                          type: string
-                          description: User ID associated with the trade
-                          example: "LO1"
-                        transaction_type:
-                          type: string
-                          description: Type of transaction (e.g., BUY or SELL)
-                          example: "SELL"
-                        exchange_order_id:
-                          type: string
-                          description: ID assigned by the exchange for the order
-                          example: "O30452918"
-                        fill_timestamp:
-                          type: string
-                          description: Timestamp indicating when the trade was filled at the exchange
-                          example: "23/03/202420:31:11"
-                        order_timestamp:
-                          type: string
-                          description: Timestamp at which the order was registered by the API
-                          example: "15:01:11"
-                        exchange_timestamp:
-                          type: string
-                          description: Timestamp at which the order was registered by the exchange
-                          example: "23/03/202420:31:11"
+                      - type: object
+                        properties:
+                          trade_id:
+                            type: string
+                            example: "1740"
+                          order_id:
+                            type: string
+                            description: Unique order ID, generated while placing the trade
+                            example: "22"
+                          exchange:
+                            type: string
+                            description: The exchange where the trade occurred
+                            example: "NSECM"
+                          tradingsymbol:
+                            type: string
+                            description: Symbol of the traded instrument
+                            example: "SBIN"
+                          instrument_token:
+                            type: string
+                            description: The numerical identifier issued by the exchange representing the instrument. Used for subscribing to live market data over WebSocket.
+                            example: "NSECM"
+                          product:
+                            type: string
+                            description: Type of product (e.g., CNC)
+                            example: "CNC"
+                          average_price:
+                            type: string
+                            description: Price at which the quantity was filled
+                            example: "747.70000000000005"
+                          quantity:
+                            type: string
+                            description: Number of units traded
+                            example: "100"
+                          tag:
+                            type: string
+                            description: Additional tag or label (if any)
+                            example: "ReferenceTag"
+                          placed_by:
+                            type: string
+                            description: Identifier for the entity that placed the order
+                            example: "LO1"
+                          userid:
+                            type: string
+                            description: User ID associated with the trade
+                            example: "LO1"
+                          transaction_type:
+                            type: string
+                            description:  Type of transaction (e.g., BUY or SELL)
+                            example: "SELL"
+                          exchange_order_id:
+                            type: string
+                            description: ID assigned by the exchange for the order
+                            example: "O30452918"
+                          fill_timestamp:
+                            type: string
+                            description: Timestamp indicating when the trade was filled at the exchange
+                            example: "23/03/202420:31:11"
+                          order_timestamp:
+                            type: string
+                            description: Timestamp at which the order was registered by the API
+                            example: "15:01:11"
+                          exchange_timestamp:
+                            type: string
+                            description: Timestamp at which the order was registered by the exchange
+                            example: "23/03/202420:31:11"
 
-        "401":
+
+                      - type: object
+                        properties:
+                          trade_id:
+                            type: string
+                            example: "1741"
+                          order_id:
+                            type: string
+                            description: Unique order ID, generated while placing the trade
+                            example: "23"
+                          exchange:
+                            type: string
+                            description: The exchange where the trade occurred
+                            example: "NSECM"
+                          tradingsymbol:
+                            type: string
+                            description: Symbol of the traded instrument
+                            example: "SBIN"
+                          instrument_token:
+                            type: string
+                            description: The numerical identifier issued by the exchange representing the instrument. Used for subscribing to live market data over WebSocket.
+                            example: "NSECM"
+                          product:
+                            type: string
+                            description: Type of product (e.g., CNC)
+                            example: "CNC"
+                          average_price:
+                            type: string
+                            description: Price at which the quantity was filled
+                            example: "747.39999999999998"
+                          quantity:
+                            type: string
+                            description: Number of units traded
+                            example: "100"
+                          tag:
+                            type: string
+                            description: Additional tag or label (if any)
+                            example: "ReferenceTag"
+                          placed_by:
+                            type: string
+                            description: Identifier for the entity that placed the order
+                            example: "LO1"
+                          userid:
+                            type: string
+                            description: User ID associated with the trade
+                            example: "LO1"
+                          transaction_type:
+                            type: string
+                            description:  Type of transaction (e.g., BUY or SELL)
+                            example: "SELL"
+                          exchange_order_id:
+                            type: string
+                            description: ID assigned by the exchange for the order
+                            example: "O30452919"
+                          fill_timestamp:
+                            type: string
+                            description: Timestamp indicating when the trade was filled at the exchange
+                            example: "23/03/202420:31:19"
+                          order_timestamp:
+                            type: string
+                            description: Timestamp at which the order was registered by the API
+                            example: "15:01:19"
+                          exchange_timestamp:
+                            type: string
+                            description: Timestamp at which the order was registered by the exchange
+                            example: "23/03/202420:31:19"
+
+                      - type: object
+                        properties:
+                          trade_id:
+                            type: string
+                            example: "1742"
+                          order_id:
+                            type: string
+                            description: Unique order ID, generated while placing the trade
+                            example: "24"
+                          exchange:
+                            type: string
+                            description: The exchange where the trade occurred
+                            example: "NSECM"
+                          tradingsymbol:
+                            type: string
+                            description: Symbol of the traded instrument
+                            example: "SBIN"
+                          instrument_token:
+                            type: string
+                            description: The numerical identifier issued by the exchange representing the instrument. Used for subscribing to live market data over WebSocket.
+                            example: "NSECM"
+                          product:
+                            type: string
+                            description: Type of product (e.g., CNC)
+                            example: "NRML"
+                          average_price:
+                            type: string
+                            description: Price at which the quantity was filled
+                            example: "748.04999999999995"
+                          quantity:
+                            type: string
+                            description: Number of units traded
+                            example: "100"
+                          tag:
+                            type: string
+                            description: Additional tag or label (if any)
+                            example: "ReferenceTag"
+                          placed_by:
+                            type: string
+                            description: Identifier for the entity that placed the order
+                            example: "LO1"
+                          userid:
+                            type: string
+                            description: User ID associated with the trade
+                            example: "LO1"
+                          transaction_type:
+                            type: string
+                            description:  Type of transaction (e.g., BUY or SELL)
+                            example: "SELL"
+                          exchange_order_id:
+                            type: string
+                            description: ID assigned by the exchange for the order
+                            example: "O30452920"
+                          fill_timestamp:
+                            type: string
+                            description: Timestamp indicating when the trade was filled at the exchange
+                            example: "23/03/202420:32:24"
+                          order_timestamp:
+                            type: string
+                            description: Timestamp at which the order was registered by the API
+                            example: "15:02:24"
+                          exchange_timestamp:
+                            type: string
+                            description: Timestamp at which the order was registered by the exchange
+                            example: "23/03/202420:32:24"
+        '401':
           description: Invalid access token
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: unsuccessful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       error:
                         type: string
@@ -3101,6 +3453,7 @@ paths:
       description: |
         When any order gets executed, a new trade event is generated by the server. It can be retrieved particularly if OrderID is known.
 
+      
       security:
         - ApiKeyAuth: []
       parameters:
@@ -3113,8 +3466,8 @@ paths:
             default: 3
           # example: '3'
       responses:
-        "200":
-          description: Successful response click `>` to expand
+        '200':
+          description: Successful response [click `>` to expand]
           content:
             application/json:
               schema:
@@ -3173,7 +3526,7 @@ paths:
                           example: "LO1"
                         transaction_type:
                           type: string
-                          description: Type of transaction (e.g., BUY or SELL)
+                          description:  Type of transaction (e.g., BUY or SELL)
                           example: "Sell"
                         tag:
                           type: string
@@ -3187,20 +3540,20 @@ paths:
                           type: string
                           description: Timestamp at which the order was registered by the exchange
                           example: "23/03/202420:32:24"
-        "401":
+        '401':
           description: Invalid access token
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: unsuccessful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       error:
                         type: string
@@ -3256,6 +3609,7 @@ paths:
       description: |
         When any order gets executed, a new trade event is generated by the server. It can be retrieved selectively if OrderID and reference tag is known.
 
+      
       security:
         - ApiKeyAuth: []
       parameters:
@@ -3268,8 +3622,8 @@ paths:
             default: 3
           # example: '3'
       responses:
-        "200":
-          description: Successful response click `>` to expand
+        '200':
+          description: Successful response [click `>` to expand]
           content:
             application/json:
               schema:
@@ -3328,7 +3682,7 @@ paths:
                           example: "LO1"
                         transaction_type:
                           type: string
-                          description: Type of transaction (e.g., BUY or SELL)
+                          description:  Type of transaction (e.g., BUY or SELL)
                           example: "Sell"
                         tag:
                           type: string
@@ -3343,20 +3697,20 @@ paths:
                           description: Timestamp at which the order was registered by the exchange
                           example: "23/03/202420:32:24"
 
-        "401":
+        '401':
           description: Invalid access token
           content:
             application/json:
               schema:
                 type: object
-                description: click `>` to expand
+                description: [click `>` to expand]
                 properties:
                   status:
                     type: string
                     example: unsuccessful
                   data:
                     type: object
-                    description: click `>` to expand
+                    description: [click `>` to expand]
                     properties:
                       error:
                         type: string
@@ -3427,6 +3781,16 @@ paths:
 
         `Note:` The CSV file is very large, so this is only a snippet of the CSV response file.
 
+
+
+
+
+
+
+
+
+
+
       parameters:
         - name: Api-Version
           in: header
@@ -3435,6 +3799,8 @@ paths:
           schema:
             type: string
             default: 3
+      
+
 
       x-codeSamples:
         - lang: Python
