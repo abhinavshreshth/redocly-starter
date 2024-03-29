@@ -49,7 +49,7 @@ tags:
   - name: User
     description: "Example actions on user accounts."
   - name: Admin
-    description: "Example operations reserved for administrators."
+    description: "Example operations reserved for administrators.eee"
   - name: Info
     description: "Example operations for retrieving information."
   - name: Tag
