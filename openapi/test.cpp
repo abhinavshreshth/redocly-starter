@@ -1,29 +1,27 @@
 #include <iostream>
+using namespace std;
 
-// Example class definition
 class MyClass {
-private:
-  // Data member (private by default)
-  int myNumber;
-
 public:
-  // Constructor (public by default)
-  MyClass(int num) {
-    myNumber = num; // Initialize the data member
-  }
+  int value;
 
-  // Member function (public by default)
-  void displayNumber() {
-    std::cout << "My number is: " << myNumber << std::endl;
-  }
+  // Overloading the dot operator (this is invalid and won't compile)
+  int operator.(int val) { return value + val; }
 };
 
-int main() {
-  // Create an object of MyClass
-  MyClass obj(42); // Calls the constructor with argument 42
+// Overloading the ternary conditional operator (this is invalid and won't
+// compile)
+int operator? (bool condition, int a, int b) { return condition ? a : b; }
 
-  // Call the member function to display the number
-  obj.displayNumber();
+int main() {
+  MyClass obj;
+  obj.value = 10;
+
+  // Attempting to use the overloaded dot operator
+  cout << "Value: " << obj .10 << endl; // This will cause a compilation error
+
+  // Attempting to use the overloaded ternary conditional operator
+  int result = true ? 10 : 20; // This will cause a compilation error
 
   return 0;
 }
