@@ -1,30 +1,36 @@
-#include "MyClass.h"
 #include <iostream>
+#include <memory>
 
-// Constructor definition
-MyClass::MyClass() {
-  // Allocate memory for myStructPtr
-  myStructPtr = new MyStruct;
-}
+class MyClass {
+public:
+  MyClass() { std::cout << "MyClass Constructor" << std::endl; }
 
-// Member function to display myInt using arrow operator
-void MyClass::display() {
-  std::cout << "Value of myInt is: " << myStructPtr->myInt << std::endl;
-}
+  ~MyClass() { std::cout << "MyClass Destructor" << std::endl; }
 
-// Main function
+  void doSomething() { std::cout << "Doing something..." << std::endl; }
+};
+
 int main() {
-  // Create an object of MyClass
-  MyClass obj;
+  // Using std::unique_ptr
+  {
+    std::cout << "Using std::unique_ptr:" << std::endl;
+    std::unique_ptr<MyClass> uniquePtr(new MyClass);
+    uniquePtr->doSomething();
+    // Memory automatically released when uniquePtr goes out of scope
+  } // Here, MyClass Destructor will be called automatically
 
-  // Assign a value to myInt using arrow operator
-  obj.myStructPtr->myInt = 10;
+  std::cout << std::endl;
 
-  // Display the value of myInt using arrow operator
-  obj.display();
-
-  // Deallocate memory for myStructPtr
-  delete obj.myStructPtr;
+  // Using std::shared_ptr
+  {
+    std::cout << "Using std::shared_ptr:" << std::endl;
+    std::shared_ptr<MyClass> sharedPtr1(new MyClass);
+    std::shared_ptr<MyClass> sharedPtr2 = sharedPtr1; // Shared ownership
+    sharedPtr1->doSomething();
+    sharedPtr2->doSomething();
+    // Memory automatically released when sharedPtr1 and sharedPtr2 both go out
+    // of scope
+  } // Here, MyClass Destructor will be called automatically
 
   return 0;
 }
