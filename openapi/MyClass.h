@@ -4,12 +4,15 @@
 // Define a simple structure
 struct MyStruct {
   int myInt;
+  int name;
+  double price;
+  double vwap;
 };
 
 // Define a class containing a pointer to MyStruct
 class MyClass {
 public:
-  MyStruct *myStructPtr; // Pointer to MyStruct
+  MyStruct *DEAL; // Pointer to MyStruct
 
   // Constructor
   MyClass();
